@@ -1,56 +1,49 @@
 namespace mos6502.Decoding;
+using Microcodes;
 
-public class Decoder : Microcode
+public class Decoder : DecoderRom
 {
-    public byte opcode;
-
-    public Pointer operand;
-    
-    public Signal[] Decode(byte value)
+    public void Init()
     {
-        opcode = value;
-
-        throw new Exception("ILLEGAL OPCODE!!");
+        
     }
-    
-    public Signal[] FETCH = [];
+
+    public Signal[] Decode(byte opcode) 
+        => Table[opcode];
+
+    public Signal[] Fetch()
+        => FETCH;
 }
 
 public struct Signal()
 {
     public Cycle Cycle = Cycle.IDLE;
-    public Pointer First = Pointer.NONE;
-    public Pointer Second = Pointer.NONE;
-    public Operation Operation;
+    public Pointer First = Pointer.ZERO;
+    public Pointer Second = Pointer.ZERO;
+    public Action Action = Action.NONE;
+    public Flag Mask = Flag.NONE;
 }
 
 public enum Cycle
 {
     IDLE, DECODE, HALT, 
     REG_MOVE, MEM_READ, MEM_WRITE,
-    ALU_EXECUTE, REG_INC, REG_DEC,
+    ALU_COMPUTE, SRU_COMPUTE, 
+    REG_INC, REG_DEC,
 }
 
 public enum Pointer
 {
     PCL, PCH, // PROGRAM COUNTER
-    SP, NONE, // STACK POINTER
+    SP, ZERO, // STACK POINTER
     A, X, Y, // 8 BIT DATA REGISTERS
-    ABL, ABH, DBB, // ABUS AND DBUS DRIVERS
-    IR, SR, // INSTRUCTION AND STATUS REGISTERS
     W, Z, TMP, // TEMPORARY REGISTERS
+    IR, SR, // OPCODE AND STATUS REGISTERS
 } 
-
-public struct Operation()
-{
-    public Action Action = Action.NONE;
-    public Flag Flags = Flag.NONE;
-    public bool CarryIn = false;
-}
 
 public enum Action
 {
-    NONE, ADD, SUB,
+    NONE, ADD, SUB, IND,
 }
 
 [Flags]

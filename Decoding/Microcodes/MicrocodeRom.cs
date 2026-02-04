@@ -1,4 +1,4 @@
-namespace mos6502.Decoding;
+namespace mos6502.Decoding.Microcodes;
 
 public class MicrocodeRom
 {
@@ -13,8 +13,10 @@ public class MicrocodeRom
     protected static Signal MEM_WRITE(Pointer[] pair) => new()
         { Cycle = Cycle.MEM_WRITE, First = pair[0], Second = pair[1] };
 
-    protected static Signal ALU_COMPUTE(Operation operation, Pointer source) => new()
-        { Cycle = Cycle.ALU_EXECUTE, Operation = operation, First = source };
+    protected static Signal ALU_COMPUTE(Action action, Pointer source, Pointer operand) => new()
+        { Cycle = Cycle.ALU_COMPUTE, Action = action, First = source, Second = operand };
+    protected static Signal SRU_COMPUTE(Action action, Pointer source, Flag mask) => new()
+        { Cycle = Cycle.SRU_COMPUTE, Action = action, First = source, Mask = mask };
 
     protected static Signal PAIR_INC(Pointer[] pair) => new()
         { Cycle = Cycle.REG_INC, First = pair[0], Second = pair[1] };

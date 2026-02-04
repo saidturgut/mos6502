@@ -8,8 +8,8 @@ public class Control
 
     private byte timeState;
     
-    public bool COMMIT;
-    public bool HALT;
+    public bool commit;
+    public bool halt;
     
     public void Init(){}
 
@@ -29,8 +29,17 @@ public class Control
             switch (Decoded[timeState].Cycle)
             {
                 case Cycle.HALT: break;
-                case Cycle.DECODE: Decoded = Decoder.Decode(opcode); break;
-                default: Decoded = Decoder.FETCH; COMMIT = true; break;
+                case Cycle.DECODE:
+                {
+                    Decoded = Decoder.Decode(opcode);
+                    
+                    if (Decoded == Array.Empty<Signal>())
+                    {
+                        throw new Exception($"ILLEGAL OPCODE \"{opcode}\"");
+                    }
+                    break;
+                }
+                default: Decoded = Decoder.Fetch(); commit = true; break;
             }
             
             timeState = 0;

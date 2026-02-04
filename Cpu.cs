@@ -14,7 +14,7 @@ public class Cpu
         Datapath.Init();
         Control.Init();
         
-        while (!Control.HALT) Tick();;
+        while (!Control.halt) Tick();;
     }
 
     private void Tick()
