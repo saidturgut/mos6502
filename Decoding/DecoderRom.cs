@@ -10,13 +10,13 @@ public class DecoderRom : Microcode
         ["NOP"] = () => NONE,
 
         // LOAD & STORE
-        ["LDA"] = () => LD(Pointer.A), ["LDX"] = () => LD(Pointer.X), ["LDY"] = () => LD(Pointer.Y),
-        ["STA"] = () => NONE, ["STX"] = () => NONE, ["STY"] = () => NONE,
+        ["LDA"] = () => LOAD(Pointer.A), ["LDX"] = () => LOAD(Pointer.X), ["LDY"] = () => LOAD(Pointer.Y),
+        ["STA"] = () => STORE(Pointer.A), ["STX"] = () => STORE(Pointer.X), ["STY"] = () => STORE(Pointer.Y),
 
         // TRANSFER
-        ["TAX"] = () => NONE, ["TAY"] = () => NONE,
-        ["TXA"] = () => NONE, ["TYA"] = () => NONE,
-        ["TXS"] = () => NONE, ["TSX"] = () => NONE,
+        ["TAX"] = () => TRANSFER(Pointer.A, Pointer.X, true), ["TAY"] = () => TRANSFER(Pointer.A, Pointer.Y, true),
+        ["TXA"] = () => TRANSFER(Pointer.X, Pointer.A, true), ["TYA"] = () => TRANSFER(Pointer.Y, Pointer.A, true),
+        ["TXS"] = () => TRANSFER(Pointer.X, Pointer.SP, true), ["TSX"] = () => TRANSFER(Pointer.SP, Pointer.X, false),
 
 // --------------------------------------------------------------------- //
 
@@ -29,7 +29,7 @@ public class DecoderRom : Microcode
         ["CMP"] = () => NONE, ["CPX"] = () => NONE, ["CPY"] = () => NONE,
         ["AND"] = () => NONE, ["ORA"] = () => NONE, ["EOR"] = () => NONE,
 
-        // BITWISE
+        // SHIFT & ROTATE
         ["BIT"] = () => NONE,
         ["ASL"] = () => NONE, ["LSR"] = () => NONE,
         ["ROL"] = () => NONE, ["ROR"] = () => NONE,
@@ -69,9 +69,9 @@ public class DecoderRom : Microcode
         ["ABS"] = () => ABSOLUTE(Pointer.ZERO),
         ["ABSX"] = () => ABSOLUTE(Pointer.X),
         ["ABSY"] = () => ABSOLUTE(Pointer.Y),
-        ["IND"] = () => INDIRECT(Pointer.ZERO),
-        ["INDX"] = () => INDIRECT(Pointer.X),
-        ["INDY"] = () => INDIRECT(Pointer.Y),
+        ["IND"] = () => INDIRECT,
+        ["INDX"] = () => INDIRECT_X,
+        ["INDY"] = () => INDIRECT_Y,
         ["REL"] = () => RELATIVE,
     };
 }

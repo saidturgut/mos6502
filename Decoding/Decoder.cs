@@ -1,4 +1,5 @@
 namespace mos6502.Decoding;
+using Executing.Computing;
 using Microcodes;
 
 public class Decoder : DecoderRom
@@ -43,19 +44,5 @@ public enum Pointer
 
 public enum Action
 {
-    NONE, ADD, SUB, IND,
-}
-
-[Flags]
-public enum Flag
-{
-    NONE = 0,
-    CARRY = 1 << 0,
-    ZERO = 1 << 1,
-    INTERRUPT = 1 << 2,
-    DECIMAL = 1 << 3,
-    BREAK = 1 << 4,
-    UNUSED = 1 << 5,
-    OVERFLOW = 1 << 6,
-    NEGATIVE = 1 << 7,
+    NONE, ADD, SUB, CRY, SET,
 }

@@ -2,7 +2,7 @@ namespace mos6502.Decoding.Microcodes;
 
 public partial class Microcode
 {
-    // --------------------- MODES --------------------- //
+    // ------------------------- BYTE OUTPUT ------------------------- //
     
     protected static Signal[] IMPLICIT => // IMP
     [
@@ -10,64 +10,79 @@ public partial class Microcode
 
     protected static Signal[] ACCUMULATOR => // ACC
     [
-        REG_MOVE(Pointer.A, Pointer.TMP)
+        ..BYTE_ADDRESS(Pointer.A),
     ];
     
     protected static Signal[] IMMEDIATE => // IMM
     [
         MEM_READ(PC),
         PAIR_INC(PC),
+        ..BYTE_ADDRESS(Pointer.TMP),
     ];
-
-    protected static Signal[] ZERO_PAGE(Pointer index) => // ZP
+    
+    protected static Signal[] ZERO_PAGE(Pointer index) => // ZP, ZPX, ZPY
     [
         ..IMMEDIATE,
         ..ADD_INDEX(Pointer.TMP, index),
         MEM_READ(TMP),
-    ];
-
-    protected static Signal[] ABSOLUTE(Pointer index) => // ABS
-    [
-        ..ABSOLUTE_POINTER(index),
-        MEM_READ(WZ),
+        ..BYTE_ADDRESS(Pointer.TMP),
     ];
     
-    protected static Signal[] RELATIVE => // REL
+    // ------------------------- WORD OUTPUT ------------------------- //
+    
+    protected static Signal[] ABSOLUTE(Pointer index) => // ABS, ABSX, ABSY
     [
         ..IMMEDIATE,
-    ];
-    
-    protected static Signal[] INDIRECT(Pointer index) => // IND
-    [
-        ..ABSOLUTE_POINTER(Pointer.ZERO),
-        ..index is Pointer.X ? INDIRECT_X : NONE,
-        MEM_READ(WZ),
-        REG_MOVE(Pointer.TMP, Pointer.W),
-        PAIR_INC(WZ),
-        MEM_READ(WZ),
-        ..index is Pointer.Y ? INDIRECT_Y : NONE,
-        REG_MOVE(Pointer.TMP, Pointer.Z),
-        MEM_READ(WZ),
-    ];
-    
-    // --------------------- UTILIY --------------------- //
-    
-    private static Signal[] ABSOLUTE_POINTER(Pointer index) =>
-    [
-        ..IMMEDIATE,
-        ..ADD_INDEX(Pointer.TMP, index), // TMP + INDEX
+        ..ADD_INDEX(Pointer.TMP, index),
         REG_MOVE(Pointer.TMP, Pointer.W),
         ..IMMEDIATE,
         ..ADD_CARRY(Pointer.TMP, index),
         REG_MOVE(Pointer.TMP, Pointer.Z),
     ];
     
-    private static Signal[] INDIRECT_X =>
+    protected static Signal[] INDIRECT => // IND
     [
+        ..ABSOLUTE(Pointer.ZERO),
+        ..INDIRECT_ADDRESS(W),
+    ];
+    
+    protected static Signal[] INDIRECT_X => // INDX
+    [
+        ..INDIRECT_POINTER,
+        ..ADD_INDEX(Pointer.TMP, Pointer.X),
+        ..INDIRECT_ADDRESS(WZ),
     ];
 
-    private static Signal[] INDIRECT_Y =>
+    protected static Signal[] INDIRECT_Y => // INDY
     [
+        ..INDIRECT_POINTER,
+        ..INDIRECT_ADDRESS(WZ),
+        ..ADD_INDEX(Pointer.W, Pointer.Y), 
+        ..ADD_CARRY(Pointer.Z, Pointer.ZERO)
+    ];
+    
+    // ------------------------- MICROCODES ------------------------- //
+
+    private static Signal[] INDIRECT_POINTER =>
+    [
+        ..IMMEDIATE,
+        REG_MOVE(Pointer.TMP, Pointer.W),
+        REG_MOVE(Pointer.ZERO, Pointer.Z),
+    ];
+    
+    private static Signal[] INDIRECT_ADDRESS(Pointer[] pair) =>
+    [
+        MEM_READ(WZ),
+        REG_MOVE(Pointer.TMP, Pointer.W),
+        PAIR_INC(pair),
+        MEM_READ(WZ),
+        REG_MOVE(Pointer.TMP, Pointer.Z),
+    ];
+
+    private static Signal[] BYTE_ADDRESS(Pointer source) =>
+    [
+        REG_MOVE(source, Pointer.W),
+        REG_MOVE(Pointer.ZERO, Pointer.Z),
     ];
     
     private static Signal[] ADD_INDEX(Pointer source, Pointer index) =>
@@ -79,8 +94,13 @@ public partial class Microcode
 
     private static Signal[] ADD_CARRY(Pointer source, Pointer index) =>
     [
-       /* ..index is not Pointer.ZERO 
-            ? [ALU_COMPUTE(Action.CRY, source, Pointer.ZERO)] 
-            : NONE,*/
+        ..index is not Pointer.ZERO
+            ? [ALU_COMPUTE(Action.CRY, source, Pointer.ZERO)]
+            : NONE,
+    ];
+    
+    protected static Signal[] RELATIVE => // REL
+    [
+        ..IMMEDIATE,
     ];
 }

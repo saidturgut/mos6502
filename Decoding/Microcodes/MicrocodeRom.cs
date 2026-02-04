@@ -1,4 +1,5 @@
 namespace mos6502.Decoding.Microcodes;
+using Executing.Computing;
 
 public class MicrocodeRom
 {
@@ -15,8 +16,8 @@ public class MicrocodeRom
 
     protected static Signal ALU_COMPUTE(Action action, Pointer source, Pointer operand) => new()
         { Cycle = Cycle.ALU_COMPUTE, Action = action, First = source, Second = operand };
-    protected static Signal SRU_COMPUTE(Action action, Pointer source, Flag mask) => new()
-        { Cycle = Cycle.SRU_COMPUTE, Action = action, First = source, Mask = mask };
+    protected static Signal SRU_COMPUTE(Action action, Flag mask) => new()
+        { Cycle = Cycle.SRU_COMPUTE, Action = action, Mask = mask };
 
     protected static Signal PAIR_INC(Pointer[] pair) => new()
         { Cycle = Cycle.REG_INC, First = pair[0], Second = pair[1] };
