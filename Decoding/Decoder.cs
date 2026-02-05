@@ -19,30 +19,24 @@ public class Decoder : DecoderRom
 public struct Signal()
 {
     public Cycle Cycle = Cycle.IDLE;
-    public Pointer First = Pointer.ZERO;
-    public Pointer Second = Pointer.ZERO;
-    public Action Action = Action.NONE;
+    public Pointer First = Pointer.NIL;
+    public Pointer Second = Pointer.NIL;
+    public Operation Operation = Operation.NONE;
     public Flag Mask = Flag.NONE;
 }
 
 public enum Cycle
 {
     IDLE, DECODE, HALT, 
-    REG_MOVE, MEM_READ, MEM_WRITE,
-    ALU_COMPUTE, SRU_COMPUTE, 
-    REG_INC, REG_DEC,
+    REG_WRITE, MEM_READ, MEM_WRITE,
+    ALU_COMPUTE, PAIR_INC, PAIR_DEC,
 }
 
 public enum Pointer
 {
     PCL, PCH, // PROGRAM COUNTER
-    SP, ZERO, // STACK POINTER
+    SP, NIL, // STACK POINTER
     A, X, Y, // 8 BIT DATA REGISTERS
     W, Z, TMP, // TEMPORARY REGISTERS
     IR, SR, // OPCODE AND STATUS REGISTERS
 } 
-
-public enum Action
-{
-    NONE, ADD, SUB, CRY, SET,
-}

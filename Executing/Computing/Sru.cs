@@ -30,6 +30,12 @@ public class Sru
 public enum Flag
 {
     NONE = -1,
-    CARRY, ZERO, INTERRUPT, DECIMAL,
-    BREAK, UNUSED, OVERFLOW, NEGATIVE,
+    CARRY = 1 << 0,
+    ZERO = 1 << 1,
+    INTERRUPT = 1 << 2,
+    DECIMAL = 1 << 3,
+    BREAK = 1 << 4,
+    UNUSED = 1 << 5,
+    OVERFLOW = 1 << 6,
+    NEGATIVE = 1 << 7,
 }

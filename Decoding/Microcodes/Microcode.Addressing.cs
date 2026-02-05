@@ -1,16 +1,12 @@
 namespace mos6502.Decoding.Microcodes;
+using Executing.Computing;
 
 public partial class Microcode
 {
     // ------------------------- BYTE OUTPUT ------------------------- //
     
-    protected static Signal[] IMPLICIT => // IMP
+    protected static Signal[] IMPLIED => // IMP
     [
-    ];
-
-    protected static Signal[] ACCUMULATOR => // ACC
-    [
-        ..BYTE_ADDRESS(Pointer.A),
     ];
     
     protected static Signal[] IMMEDIATE => // IMM
@@ -34,15 +30,15 @@ public partial class Microcode
     [
         ..IMMEDIATE,
         ..ADD_INDEX(Pointer.TMP, index),
-        REG_MOVE(Pointer.TMP, Pointer.W),
+        REG_WRITE(Pointer.TMP, Pointer.W),
         ..IMMEDIATE,
         ..ADD_CARRY(Pointer.TMP, index),
-        REG_MOVE(Pointer.TMP, Pointer.Z),
+        REG_WRITE(Pointer.TMP, Pointer.Z),
     ];
     
     protected static Signal[] INDIRECT => // IND
     [
-        ..ABSOLUTE(Pointer.ZERO),
+        ..ABSOLUTE(Pointer.NIL),
         ..INDIRECT_ADDRESS(W),
     ];
     
@@ -58,44 +54,46 @@ public partial class Microcode
         ..INDIRECT_POINTER,
         ..INDIRECT_ADDRESS(WZ),
         ..ADD_INDEX(Pointer.W, Pointer.Y), 
-        ..ADD_CARRY(Pointer.Z, Pointer.ZERO)
+        ..ADD_CARRY(Pointer.Z, Pointer.NIL)
     ];
     
-    // ------------------------- MICROCODES ------------------------- //
+    // ------------------------- MACROS ------------------------- //
 
     private static Signal[] INDIRECT_POINTER =>
     [
         ..IMMEDIATE,
-        REG_MOVE(Pointer.TMP, Pointer.W),
-        REG_MOVE(Pointer.ZERO, Pointer.Z),
+        REG_WRITE(Pointer.TMP, Pointer.W),
+        REG_WRITE(Pointer.NIL, Pointer.Z),
     ];
     
     private static Signal[] INDIRECT_ADDRESS(Pointer[] pair) =>
     [
         MEM_READ(WZ),
-        REG_MOVE(Pointer.TMP, Pointer.W),
+        REG_WRITE(Pointer.TMP, Pointer.W),
         PAIR_INC(pair),
         MEM_READ(WZ),
-        REG_MOVE(Pointer.TMP, Pointer.Z),
+        REG_WRITE(Pointer.TMP, Pointer.Z),
     ];
 
     private static Signal[] BYTE_ADDRESS(Pointer source) =>
     [
-        REG_MOVE(source, Pointer.W),
-        REG_MOVE(Pointer.ZERO, Pointer.Z),
+        REG_WRITE(source, Pointer.W),
+        REG_WRITE(Pointer.NIL, Pointer.Z),
     ];
     
     private static Signal[] ADD_INDEX(Pointer source, Pointer index) =>
     [
-        ..index is not Pointer.ZERO 
-            ? [ALU_COMPUTE(Action.ADD, source, index)] 
+        ..index is not Pointer.NIL 
+            ? [ALU_COMPUTE(Operation.ADD, source, index, Flag.NONE), 
+                ..source is not Pointer.TMP ? [REG_WRITE(Pointer.TMP, source)] : NONE] 
             : NONE,
     ];
 
     private static Signal[] ADD_CARRY(Pointer source, Pointer index) =>
     [
-        ..index is not Pointer.ZERO
-            ? [ALU_COMPUTE(Action.CRY, source, Pointer.ZERO)]
+        ..index is not Pointer.NIL
+            ? [ALU_COMPUTE(Operation.ADC, source, Pointer.NIL, Flag.NONE), 
+                ..source is not Pointer.TMP ? [REG_WRITE(Pointer.TMP, source)] : NONE]
             : NONE,
     ];
     
