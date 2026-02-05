@@ -1,9 +1,13 @@
 namespace mos6502.Executing;
 using Decoding;
 
-public class Datapath
+public partial class Datapath
 {
     private readonly Register[] Registers = new Register[12];
+
+    private Signal signal = new();
+
+    private bool stall;
     
     public void Init()
     {

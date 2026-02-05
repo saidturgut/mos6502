@@ -7,8 +7,8 @@ public partial class Microcode : MicrocodeRom
     protected static Signal[] NONE = Array.Empty<Signal>();
     protected static Pointer[] PC = [Pointer.PCL, Pointer.PCH];
     protected static Pointer[] SP = [Pointer.SP, Pointer.NIL];
-    protected static Pointer[] WZ = [Pointer.W, Pointer.Z];
-    protected static Pointer[] W = [Pointer.W, Pointer.NIL];
+    protected static Pointer[] WZ = [Pointer.WR, Pointer.ZR];
+    protected static Pointer[] W = [Pointer.WR, Pointer.NIL];
     protected static Pointer[] TMP = [Pointer.TMP, Pointer.NIL];
 
     protected static Signal[] LOAD(Pointer destination) =>
@@ -47,6 +47,15 @@ public partial class Microcode : MicrocodeRom
     [
         ALU_COMPUTE(operation, source, Pointer.NIL, FlagMasks[mask]),
         REG_WRITE(Pointer.TMP, source),
+    ];
+
+    protected static Signal[] BRANCH(Condition condition) =>
+    [
+        SR_COMPUTE(condition),
+        ALU_COMPUTE(Operation.ADD, Pointer.PCL, Pointer.WR, Flag.NONE),
+        REG_WRITE(Pointer.TMP, Pointer.PCL),
+        ALU_COMPUTE(Operation.CRY, Pointer.PCH, Pointer.NIL, Flag.NONE),
+        REG_WRITE(Pointer.TMP, Pointer.PCH),
     ];
     
     protected static Signal[] CLR_SET(bool clr, Flag flag) =>

@@ -7,7 +7,7 @@ public partial class Alu
     public AluOutput Compute(AluInput input, Operation operation)
     {
         AluOutput output = Operations[(byte)operation](input);
-
+        
         if (output.Custom) return output;
         
         if ((output.Result & 0x80) != 0) output.Flags |= (byte)Flag.NEGATIVE;
@@ -22,7 +22,7 @@ public partial class Alu
         ADD, ADC, SBC,
         AND, OR, EOR, INC, DEC,
         ASL, LSR, ROL, ROR, BIT,
-        CLR, SET,
+        CLR, SET, CRY,
     ];
 }
 
@@ -32,7 +32,7 @@ public enum Operation
     ADD, ADC, SBC,
     AND, OR, EOR, INC, DEC,
     ASL, LSR, ROL, ROR, BIT,
-    CLR, SET,
+    CLR, SET, CRY,
 }
 
 public struct AluInput
@@ -40,6 +40,7 @@ public struct AluInput
     public byte A;
     public byte B;
     public byte C;
+    public byte F;
 }
 
 public struct AluOutput

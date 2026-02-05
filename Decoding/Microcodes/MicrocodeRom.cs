@@ -16,6 +16,8 @@ public class MicrocodeRom
 
     protected static Signal ALU_COMPUTE(Operation operation, Pointer source, Pointer operand, Flag mask) => new()
         { Cycle = Cycle.ALU_COMPUTE, Operation = operation, First = source, Second = operand, Mask =  mask };
+    protected static Signal SR_COMPUTE(Condition condition) => new()
+        { Cycle = Cycle.ALU_COMPUTE, Condition = condition };
 
     protected static Signal PAIR_INC(Pointer[] pair) => new()
         { Cycle = Cycle.PAIR_INC, First = pair[0], Second = pair[1] };

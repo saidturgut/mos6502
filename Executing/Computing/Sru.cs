@@ -3,27 +3,39 @@ namespace mos6502.Executing.Computing;
 // STATUS REGISTER UNIT
 public class Sru
 {
-    private readonly bool[] Flags = new bool[8];
+    public bool Carry;
+    public bool Zero;
+    public bool Interrupt;
+    public bool Decimal;
+    public bool Break;
+    public bool Unused;
+    public bool Overflow;
+    public bool Negative;
 
-    public bool Get(Flag flag)
-        => Flags[(byte)flag];
-    
-    public void Set(Flag flag, bool value)
-        => Flags[(byte)flag] = value;
-
-    public byte GetByte()
+    public void Update(byte sr)
     {
-        byte word = 0;
-        if (Flags[0]) word |= 1 << 0;
-        if (Flags[1]) word |= 1 << 1;
-        if (Flags[2]) word |= 1 << 2;
-        if (Flags[3]) word |= 1 << 3;
-        if (Flags[4]) word |= 1 << 4;
-        if (Flags[5]) word |= 1 << 5;
-        if (Flags[6]) word |= 1 << 6;
-        if (Flags[7]) word |= 1 << 7;
-        return word;
+        Carry = (byte)(sr & (byte)Flag.CARRY) != 0;
+        Zero = (byte)(sr & (byte)Flag.ZERO) != 0;
+        Interrupt = (byte)(sr & (byte)Flag.INTERRUPT) != 0;
+        Decimal = (byte)(sr & (byte)Flag.DECIMAL) != 0;
+        Break = (byte)(sr & (byte)Flag.BREAK) != 0;
+        Unused = (byte)(sr & (byte)Flag.UNUSED) != 0;
+        Overflow = (byte)(sr & (byte)Flag.OVERFLOW) != 0;
+        Negative = (byte)(sr & (byte)Flag.NEGATIVE) != 0;
     }
+    
+    public bool Check(Condition condition) => condition switch
+    {
+        Condition.CC => !Carry,
+        Condition.CS => Carry,
+        Condition.NE => !Zero,
+        Condition.EQ => Zero,
+        Condition.VC => !Overflow,
+        Condition.VS => Overflow,
+        Condition.PL => !Negative,
+        Condition.MI => Negative,
+        _ => false
+    };
 }
 
 [Flags]
@@ -38,4 +50,9 @@ public enum Flag
     UNUSED = 1 << 5,
     OVERFLOW = 1 << 6,
     NEGATIVE = 1 << 7,
+}
+
+public enum Condition
+{       // CARRY, ZERO, OVERFLOW, NEGATIVE
+    NONE, CC, CS, NE, EQ, VC, VS, PL, MI,
 }

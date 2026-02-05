@@ -8,7 +8,7 @@ public partial class Alu
         { Result = (byte)(input.A + input.B) };
     private static AluOutput SUB(AluInput input) => new()
         { Result = (byte)(input.A + ~input.B + 1) };
-    
+
     private static AluOutput ADC(AluInput input)
     {
         var result = input.A + input.B + input.C;
@@ -46,7 +46,10 @@ public partial class Alu
         { Flags = 0x00 };
     private static AluOutput SET(AluInput input) => new()
         { Flags = 0xFF };
-
+    
+    private static AluOutput CRY(AluInput input) => new()
+        { Result = (byte)(input.A + input.F & (byte)Flag.CARRY) };
+    
     private static bool Carry(int source, byte bit)
         => (byte)((source >> bit) & 1) != 0;
     private static bool SignedOverflow(byte A, byte B, byte result)
