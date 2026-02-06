@@ -7,7 +7,7 @@ public class Cpu
     private readonly Datapath Datapath = new();
     private readonly Control Control = new();
 
-    private const bool debugMode = false;
+    private const bool debugMode = true;
     
     public void Power() => Clock();
 
@@ -15,8 +15,14 @@ public class Cpu
     {
         Datapath.Init(debugMode);
         Control.Init();
+
+        while (!Control.halt)
+        {
+            Tick();
+            Thread.Sleep(50);
+        }
         
-        while (!Control.halt) Tick();;
+        Environment.Exit(55);
     }
 
     private void Tick()
@@ -34,5 +40,6 @@ public class Cpu
     {
         Datapath.Debug();
         Datapath.Clear();
+        Control.Clear();
     }
 }

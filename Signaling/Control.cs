@@ -10,15 +10,18 @@ public class Control
     
     public bool commit;
     public bool halt;
-    
-    public void Init(){}
+
+    public void Init()
+    {
+        decoded = Decoder.Fetch;
+    }
 
     public Signal Emit()
         => decoded[timeState];
 
     public void Advance(ControlSignal signal)
     {
-        if (timeState < decoded.Length && !signal.Stall)
+        if (timeState != decoded.Length - 1 && !signal.Stall)
             timeState++;
         else
             Commit(signal);
@@ -32,16 +35,22 @@ public class Control
             case Cycle.DECODE:
             {
                 decoded = Decoder.Decode(signal.Opcode);
-                    
+                
+                //Console.WriteLine($"TOTAL CYCLES : {decoded.Length}");
+                
                 if (decoded == Array.Empty<Signal>())
                 {
                     throw new Exception($"ILLEGAL OPCODE \"{signal.Opcode}\"");
                 }
                 break;
             }
-            default: decoded = Decoder.Fetch(); commit = true; break;
+            default: decoded = Decoder.Fetch; commit = true; break;
         }
-            
         timeState = 0;
+    }
+
+    public void Clear()
+    {
+        commit = false;
     }
 }

@@ -19,6 +19,8 @@ public partial class Datapath
             F = flagLatch,
             DecimalMode = Sru.Decimal,
         }, signal.Operation);
+        
+        //Console.WriteLine($"ALU OUTPUT {Hex(output.Result)}");
 
         flagLatch = output.Flags;
         

@@ -2,7 +2,8 @@ namespace mos6502.Executing.Computing;
 
 public partial class Alu
 {
-    private static AluOutput NONE(AluInput input) => new();
+    private static AluOutput NONE(AluInput input) => new()
+        { Result = input.A, };
 
     private static AluOutput ADD(AluInput input) => new()
         { Result = (byte)(input.A + input.B) };

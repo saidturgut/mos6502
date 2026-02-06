@@ -1,22 +1,31 @@
 namespace mos6502.Signaling;
 using Executing.Computing;
+using Microcodes;
 
-public class Decoder : DecoderRom
+public class Decoder
 {
-    public void Init()
-    {
-        
-    }
-    
-    public Signal[] Fetch()
-        => FETCH;
+    private readonly Signal[][] Table = Microcode.OpcodeRom(false);
 
-    public Signal[] Decode(byte opcode) 
-        => Table[opcode];
+    public readonly Signal[] Fetch = Microcode.FETCH;
+
+    public Signal[] Decode(byte opcode)
+    {
+        Console.WriteLine("********");
+
+        foreach (var VARIABLE in Table[opcode])
+        {
+            Console.WriteLine(VARIABLE.Cycle);
+        }
+        
+        Console.WriteLine("********");
+
+        return Table[opcode];
+    }
 }
 
 public struct Signal()
 {
+    public string Name = "";
     public Cycle Cycle = Cycle.IDLE;
     public Pointer First = Pointer.NIL;
     public Pointer Second = Pointer.NIL;
@@ -28,7 +37,7 @@ public struct Signal()
 public enum Cycle
 {
     IDLE, DECODE, HALT, 
-    REG_WRITE, MEM_READ, MEM_WRITE,
+    REG_COMMIT, MEM_READ, MEM_WRITE,
     ALU_COMPUTE, PAIR_INC, PAIR_DEC,
 }
 

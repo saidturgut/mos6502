@@ -1,7 +1,4 @@
-using mos6502.Signaling.Microcodes;
-
 namespace mos6502.Executing.Computing;
-using Signaling;
 
 public partial class Alu
 {

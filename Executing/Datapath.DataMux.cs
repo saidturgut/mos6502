@@ -3,17 +3,19 @@ using Signaling;
 
 public partial class Datapath
 {
+    private readonly Rom Rom = new();
     private readonly Ram Ram = new();
 
     private void RegisterWrite()
     {
         Point(signal.Second).Set(Point(signal.First).Get());
+        //Console.WriteLine($"REG WRITE: {signal.Second} {Point(signal.Second).Get()}");
     }
 
     private void MemoryRead()
-    {
-        Point(Pointer.TMP).Set(Ram.Read(Merge(
-            Point(signal.First).Get(), Point(signal.Second).Get())));
+    {        
+        Point(Pointer.TMP).Set(Ram.Read(Merge(Point(signal.First).Get(), Point(signal.Second).Get())));
+        //Console.WriteLine($"RAM READ: {Hex(Merge(Point(signal.First).Get(), Point(signal.Second).Get()))} {Hex(Point(Pointer.TMP).Get())}");
     }
 
     private void MemoryWrite()
@@ -42,6 +44,7 @@ public partial class Datapath
     
     public void Clear()
     {
+        debugName = "";
         Point(Pointer.NIL).Set(0);
         Point(Pointer.TMP).Set(0);
         Point(Pointer.WR).Set(0);

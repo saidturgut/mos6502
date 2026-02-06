@@ -1,10 +1,11 @@
 namespace mos6502;
+using Testing;
 
 public class Ram
 {
     private readonly byte[] Memory = new byte[0x10000];
     
-    //public void MemoryDump() => HexDump.Run(Memory);
+    public void MemoryDump() => HexDump.Run(Memory);
 
     public void LoadByte(ushort address, byte data)
         => Memory[address] = data;

@@ -15,6 +15,14 @@ public partial class Datapath
         debugMode = debug;
         for (int i = 0; i < Registers.Length; i++)
             Registers[i] =  new Register();
+
+        Rom.Boot(Ram);
+        
+        Point(Pointer.SP).Set(0xFD);
+        Point(Pointer.SR).Set(0x20);
+        Point(Pointer.PCH).Set(0x80);
+        Point(Pointer.IX).Set(0x4);
+        Point(Pointer.IY).Set(0x8);
     }
     
     public void Receive(Signal input)
@@ -22,9 +30,10 @@ public partial class Datapath
 
     public void Execute()
     {
+        if (signal.Name != "") debugName = signal.Name;
         switch (signal.Cycle)
         {
-            case Cycle.REG_WRITE: RegisterWrite(); break;
+            case Cycle.REG_COMMIT: RegisterWrite(); break;
             case Cycle.MEM_READ: MemoryRead(); break;
             case Cycle.MEM_WRITE: MemoryWrite(); break;
             case Cycle.ALU_COMPUTE: AluCompute(); break;
@@ -44,6 +53,6 @@ public partial class Datapath
 
 public struct ControlSignal(byte opcode, bool stall)
 {
-    public byte Opcode;
-    public bool Stall;
+    public byte Opcode = opcode;
+    public bool Stall = stall;
 }
