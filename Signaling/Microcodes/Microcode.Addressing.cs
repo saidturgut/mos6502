@@ -1,4 +1,4 @@
-namespace mos6502.Decoding.Microcodes;
+namespace mos6502.Signaling.Microcodes;
 using Executing.Computing;
 
 public partial class Microcode
@@ -53,7 +53,7 @@ public partial class Microcode
         ..INDIRECT_POINTER,
         ..INDIRECT_ADDRESS(WZ),
         ..ADD_INDEX(Pointer.WR, Pointer.IY), 
-        ..ADD_CARRY(Pointer.ZR, Pointer.NIL)
+        ..ADD_CARRY(Pointer.ZR, Pointer.IY)
     ];
     
     // ------------------------- MACROS ------------------------- //

@@ -1,13 +1,13 @@
 namespace mos6502.Executing;
 using Computing;
-using Decoding;
+using Signaling;
 
 public partial class Datapath
 {
     private readonly Alu Alu = new ();
     private readonly Sru Sru = new ();
     
-    private byte flagLatch; // CLEARED ON BOUNDARY, WRITTEN PER OPERATION
+    private byte flagLatch;
 
     private void AluCompute()
     {
@@ -17,6 +17,7 @@ public partial class Datapath
             B = Point(signal.Second).Get(),
             C = (byte)(Sru.Carry ? 1 : 0),
             F = flagLatch,
+            DecimalMode = Sru.Decimal,
         }, signal.Operation);
 
         flagLatch = output.Flags;

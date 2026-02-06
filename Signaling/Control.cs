@@ -1,10 +1,10 @@
 namespace mos6502.Signaling;
-using Decoding;
+using Executing;
 
 public class Control
 {
-    private Decoder Decoder = new();
-    private Signal[] Decoded = [];
+    private readonly Decoder Decoder = new();
+    private Signal[] decoded = [];
 
     private byte timeState;
     
@@ -13,36 +13,35 @@ public class Control
     
     public void Init(){}
 
-    public void Emit()
+    public Signal Emit()
+        => decoded[timeState];
+
+    public void Advance(ControlSignal signal)
     {
-        
+        if (timeState < decoded.Length && !signal.Stall)
+            timeState++;
+        else
+            Commit(signal);
     }
 
-    public void Advance(byte opcode)
+    private void Commit(ControlSignal signal)
     {
-        if (timeState < Decoded.Length)
+        switch (decoded[timeState].Cycle)
         {
-            timeState++;
-        }
-        else
-        {
-            switch (Decoded[timeState].Cycle)
+            case Cycle.HALT: halt = true; break;
+            case Cycle.DECODE:
             {
-                case Cycle.HALT: break;
-                case Cycle.DECODE:
-                {
-                    Decoded = Decoder.Decode(opcode);
+                decoded = Decoder.Decode(signal.Opcode);
                     
-                    if (Decoded == Array.Empty<Signal>())
-                    {
-                        throw new Exception($"ILLEGAL OPCODE \"{opcode}\"");
-                    }
-                    break;
+                if (decoded == Array.Empty<Signal>())
+                {
+                    throw new Exception($"ILLEGAL OPCODE \"{signal.Opcode}\"");
                 }
-                default: Decoded = Decoder.Fetch(); commit = true; break;
+                break;
             }
-            
-            timeState = 0;
+            default: decoded = Decoder.Fetch(); commit = true; break;
         }
+            
+        timeState = 0;
     }
 }

@@ -1,5 +1,4 @@
 namespace mos6502.Executing.Computing;
-using Decoding;
 
 // ARITHMETIC LOGIC UNIT
 public partial class Alu
@@ -19,20 +18,20 @@ public partial class Alu
     private static readonly Func<AluInput, AluOutput>[] Operations =
     [
         NONE, 
-        ADD, ADC, SBC,
+        ADD, ADC, DAD, SBC, DSB,
         AND, OR, EOR, INC, DEC,
         ASL, LSR, ROL, ROR, BIT,
-        CLR, SET, CRY,
+        CLR, SET, CRY, PSR, SRP,
     ];
 }
 
 public enum Operation
 {
     NONE, 
-    ADD, ADC, SBC,
+    ADD, ADC, DAD, SBC, DSB,
     AND, OR, EOR, INC, DEC,
     ASL, LSR, ROL, ROR, BIT,
-    CLR, SET, CRY,
+    CLR, SET, CRY, PSR, SRP,
 }
 
 public struct AluInput
@@ -41,6 +40,7 @@ public struct AluInput
     public byte B;
     public byte C;
     public byte F;
+    public bool DecimalMode;
 }
 
 public struct AluOutput

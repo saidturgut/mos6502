@@ -1,4 +1,4 @@
-namespace mos6502.Decoding.Microcodes;
+namespace mos6502.Signaling.Microcodes;
 using Executing.Computing;
 
 public partial class Microcode : MicrocodeRom
@@ -51,11 +51,63 @@ public partial class Microcode : MicrocodeRom
 
     protected static Signal[] BRANCH(Condition condition) =>
     [
-        SR_COMPUTE(condition),
-        ALU_COMPUTE(Operation.ADD, Pointer.PCL, Pointer.WR, Flag.NONE),
-        REG_WRITE(Pointer.TMP, Pointer.PCL),
-        ALU_COMPUTE(Operation.CRY, Pointer.PCH, Pointer.NIL, Flag.NONE),
+        CHECK_COND(condition),
+        ..ADD_INDEX(Pointer.PCL, Pointer.WR),
+        ..ADD_CARRY(Pointer.PCH, Pointer.ZR),
+    ];
+
+    protected static Signal[] PUSH(Pointer source) =>
+    [
+        source is Pointer.SR ? ALU_COMPUTE(Operation.PSR, Pointer.SR, Pointer.NIL, Flag.NONE) : REG_WRITE(source, Pointer.TMP),
+        MEM_WRITE(SP),
+        PAIR_DEC(SP),
+    ];
+    
+    protected static Signal[] PULL(Pointer destination) =>
+    [
+        PAIR_INC(SP),
+        MEM_READ(SP),
+        ..destination is Pointer.SR ? [ALU_COMPUTE(Operation.SRP, Pointer.TMP, Pointer.NIL, Flag.NONE)] : NONE,
+        REG_WRITE(Pointer.TMP, destination),
+    ];
+
+    protected static Signal[] JUMP =>
+    [
+        REG_WRITE(Pointer.WR, Pointer.PCL),
+        REG_WRITE(Pointer.ZR, Pointer.PCH),
+    ];
+    
+    protected static Signal[] CALL =>
+    [
+        PAIR_DEC(PC),
+        ..PUSH(Pointer.PCH),
+        ..PUSH(Pointer.PCL),
+        ..JUMP,
+    ];
+
+    protected static Signal[] RETURN(bool rti) =>
+    [
+        ..rti ? PULL(Pointer.SR) : NONE,
+        ..PULL(Pointer.WR),
+        ..PULL(Pointer.ZR),
+        ..rti ? NONE : [PAIR_INC(WZ)],
+        ..JUMP
+    ];
+
+    protected static Signal[] BREAK =>
+    [
+        PAIR_INC(PC),
+        ..PUSH(Pointer.SR),
+        ..PUSH(Pointer.PCH),
+        ..PUSH(Pointer.PCL),
+        ALU_COMPUTE(Operation.SET, Pointer.NIL, Pointer.NIL, Flag.INTERRUPT),
+        REG_WRITE(Pointer.TMP, Pointer.WR), // LOAD 0XFF ON WZ
+        REG_WRITE(Pointer.TMP, Pointer.ZR),
+        MEM_READ(WZ),
         REG_WRITE(Pointer.TMP, Pointer.PCH),
+        PAIR_DEC(WZ),
+        MEM_READ(WZ),
+        REG_WRITE(Pointer.TMP, Pointer.PCL),
     ];
     
     protected static Signal[] CLR_SET(bool clr, Flag flag) =>

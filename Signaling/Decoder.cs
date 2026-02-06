@@ -1,6 +1,5 @@
-namespace mos6502.Decoding;
+namespace mos6502.Signaling;
 using Executing.Computing;
-using Microcodes;
 
 public class Decoder : DecoderRom
 {
@@ -8,12 +7,12 @@ public class Decoder : DecoderRom
     {
         
     }
+    
+    public Signal[] Fetch()
+        => FETCH;
 
     public Signal[] Decode(byte opcode) 
         => Table[opcode];
-
-    public Signal[] Fetch()
-        => FETCH;
 }
 
 public struct Signal()
@@ -30,8 +29,7 @@ public enum Cycle
 {
     IDLE, DECODE, HALT, 
     REG_WRITE, MEM_READ, MEM_WRITE,
-    ALU_COMPUTE, SR_COMPUTE, 
-    PAIR_INC, PAIR_DEC,
+    ALU_COMPUTE, PAIR_INC, PAIR_DEC,
 }
 
 public enum Pointer

@@ -26,6 +26,7 @@ public class Sru
     
     public bool Check(Condition condition) => condition switch
     {
+        Condition.NONE => true,
         Condition.CC => !Carry,
         Condition.CS => Carry,
         Condition.NE => !Zero,
@@ -34,7 +35,6 @@ public class Sru
         Condition.VS => Overflow,
         Condition.PL => !Negative,
         Condition.MI => Negative,
-        _ => false
     };
 }
 

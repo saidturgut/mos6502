@@ -1,11 +1,26 @@
-namespace mos6502.Decoding;
+namespace mos6502.Signaling;
 using Executing.Computing;
 using Microcodes;
 
 public class DecoderRom : Microcode
 {
-    protected static readonly Signal[][] Table = new Signal[256][];
+    protected static readonly Signal[][] Table = new Signal[0x100][];
 
+    protected static readonly Dictionary<string, Func<Signal[]>> AddressingTable = new()
+    {
+        ["IMP"] = () => IMPLIED,
+        ["IMM"] = () => IMMEDIATE,
+        ["ZP"] = () => ZERO_PAGE(Pointer.NIL),
+        ["ZPX"] = () => ZERO_PAGE(Pointer.IX),
+        ["ZPY"] = () => ZERO_PAGE(Pointer.IY),
+        ["ABS"] = () => ABSOLUTE(Pointer.NIL),
+        ["ABSX"] = () => ABSOLUTE(Pointer.IX),
+        ["ABSY"] = () => ABSOLUTE(Pointer.IY),
+        ["IND"] = () => INDIRECT,
+        ["INDX"] = () => INDIRECT_X,
+        ["INDY"] = () => INDIRECT_Y,
+    };
+    
     protected static readonly Dictionary<string, Func<Signal[]>> MnemonicTable = new()
     {
         ["NOP"] = () => [CHANGE_STATE(Cycle.IDLE)],
@@ -48,33 +63,18 @@ public class DecoderRom : Microcode
         // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 
         // CONTROL FLOW
-        ["JMP"] = () => NONE, ["JSR"] = () => NONE,
-        ["RTI"] = () => NONE, ["RTS"] = () => NONE,
+        ["JMP"] = () => JUMP, ["JSR"] = () => CALL,
+        ["RTI"] = () => RETURN(true), ["RTS"] = () => RETURN(false),
+        ["BRK"] = () => BREAK,
 
         // PUSH & PULL
-        ["PHA"] = () => NONE, ["PHP"] = () => NONE,
-        ["PLA"] = () => NONE, ["PLP"] = () => NONE,
+        ["PHA"] = () => PUSH(Pointer.ACC), ["PHP"] = () => PUSH(Pointer.SR),
+        ["PLA"] = () => PULL(Pointer.ACC), ["PLP"] = () => PULL(Pointer.SR),
 
         // BRANCH CLEAR & SET
         ["BCC"] = () => BRANCH(Condition.CC), ["BCS"] = () => BRANCH(Condition.CS),
         ["BNE"] = () => BRANCH(Condition.NE), ["BEQ"] = () => BRANCH(Condition.EQ),
         ["BPL"] = () => BRANCH(Condition.PL), ["BMI"] = () => BRANCH(Condition.MI),
         ["BVC"] = () => BRANCH(Condition.VC), ["BVS"] = () => BRANCH(Condition.VS),
-        ["BRK"] = () => NONE,
-    };
-    
-    protected static readonly Dictionary<string, Func<Signal[]>> AddressingTable = new()
-    {
-        ["IMP"] = () => IMPLIED,
-        ["IMM"] = () => IMMEDIATE,
-        ["ZP"] = () => ZERO_PAGE(Pointer.NIL),
-        ["ZPX"] = () => ZERO_PAGE(Pointer.IX),
-        ["ZPY"] = () => ZERO_PAGE(Pointer.IY),
-        ["ABS"] = () => ABSOLUTE(Pointer.NIL),
-        ["ABSX"] = () => ABSOLUTE(Pointer.IX),
-        ["ABSY"] = () => ABSOLUTE(Pointer.IY),
-        ["IND"] = () => INDIRECT,
-        ["INDX"] = () => INDIRECT_X,
-        ["INDY"] = () => INDIRECT_Y,
     };
 }

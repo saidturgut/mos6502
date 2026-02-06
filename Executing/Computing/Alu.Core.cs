@@ -11,6 +11,8 @@ public partial class Alu
 
     private static AluOutput ADC(AluInput input)
     {
+        if (input.DecimalMode) return DAD(input);
+        
         var result = input.A + input.B + input.C;
         AluOutput output = new() { Result = (byte)result };
 
@@ -21,6 +23,8 @@ public partial class Alu
     }
     private static AluOutput SBC(AluInput input)
     {
+        if (input.DecimalMode) return DSB(input);
+
         var result = input.A + ~input.B + input.C;
         AluOutput output = new() { Result = (byte)result };
         
@@ -41,14 +45,6 @@ public partial class Alu
     { input.B = 1; return ADD(input); }
     private static AluOutput DEC(AluInput input)
     { input.B = 1; return SUB(input); }
-
-    private static AluOutput CLR(AluInput input) => new()
-        { Flags = 0x00 };
-    private static AluOutput SET(AluInput input) => new()
-        { Flags = 0xFF };
-    
-    private static AluOutput CRY(AluInput input) => new()
-        { Result = (byte)(input.A + input.F & (byte)Flag.CARRY) };
     
     private static bool Carry(int source, byte bit)
         => (byte)((source >> bit) & 1) != 0;

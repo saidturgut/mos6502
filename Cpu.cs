@@ -6,12 +6,14 @@ public class Cpu
 {
     private readonly Datapath Datapath = new();
     private readonly Control Control = new();
+
+    private const bool debugMode = false;
     
     public void Power() => Clock();
 
     private void Clock()
     {
-        Datapath.Init();
+        Datapath.Init(debugMode);
         Control.Init();
         
         while (!Control.halt) Tick();;
@@ -19,10 +21,18 @@ public class Cpu
 
     private void Tick()
     {
-        Control.Emit();
+        Datapath.Receive(Control.Emit());
         
-        // EXECUTE
-        
-        Control.Advance(Datapath.Opcode());
+        Datapath.Execute();
+
+        Control.Advance(Datapath.Emit());
+
+        if (Control.commit) Commit();
+    }
+
+    private void Commit()
+    {
+        Datapath.Debug();
+        Datapath.Clear();
     }
 }
