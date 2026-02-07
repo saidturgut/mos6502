@@ -37,6 +37,14 @@ public partial class Alu
         return output;
     }
     
+    private static AluOutput IDX(AluInput input)
+    {
+        var result = input.A + input.B;
+        AluOutput output = new() { Result = (byte)result };
+        if (Carry(result, 8)) output.Flags |= (byte)Flag.CARRY;
+        return output;
+    }
+    
     private static AluOutput CRY(AluInput input) => new()
         { Result = (byte)(input.A + (input.F & (byte)Flag.CARRY)) };
     

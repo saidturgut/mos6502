@@ -3,40 +3,6 @@ using Executing.Computing;
 
 public static partial class Microcode
 {
-    public static Signal[][] OpcodeRom(bool dump)
-    {
-        Signal[][] table = new Signal[256][];
-        string[] lines = File.ReadAllLines("OpcodeTable.csv");
-
-        for (int i = 1; i <= 16; i++)
-        {
-            string[] cells = lines[i].Split(',').Select(x => x.Trim()).ToArray();   
-            
-            for (int j = 1; j <= 16; j++)
-            {
-                string[] cell = cells[j].Split(' ');
-                var index = ((i - 1) << 4) | (j - 1);
-                table[index] = [..AddressingTable[cell[1]](), ..MnemonicTable[cell[0]]()];
-                if (table[index].Length < 2) continue;
-                table[index][0].Name = $"{cell[0]} {DebugAddressingModes[cell[1]]}";
-            }
-        }
-
-        if (dump)
-        {
-            for (int i = 0; i < 256; i++)
-            {
-                Console.WriteLine($"OPCODE {i:X2}");
-                foreach (Signal signal in table[i]) Console.WriteLine(signal.Cycle);
-                Console.WriteLine("-----------------------------");
-            }
-        
-            Environment.Exit(20);
-        }
-        
-        return table;
-    }
-    
     private static readonly Dictionary<string, Func<Signal[]>> AddressingTable = new()
     {
         ["-"] = () => [],
@@ -51,12 +17,6 @@ public static partial class Microcode
         ["IND"] = () => INDIRECT,
         ["INDX"] = () => INDIRECT_X,
         ["INDY"] = () => INDIRECT_Y,
-    };
-
-    private static readonly Dictionary<string, string> DebugAddressingModes = new()
-    {
-        {"IMP", "imp"}, {"IMM", "#$??"}, {"ZP", "$??"}, {"ZPX", "$??,X"}, {"ZPY", "$??,Y"},
-        {"ABS", "$????"}, {"ABSX", "$????,X"}, {"ABSY", "$????,Y"}, {"IND", "($????)"}, {"INDX", "($??,X)"}, {"INDY", "($??),Y"},
     };
     
     private static readonly Dictionary<string, Func<Signal[]>> MnemonicTable = new()
@@ -115,5 +75,32 @@ public static partial class Microcode
         ["BNE"] = () => BRANCH(Condition.NE), ["BEQ"] = () => BRANCH(Condition.EQ),
         ["BPL"] = () => BRANCH(Condition.PL), ["BMI"] = () => BRANCH(Condition.MI),
         ["BVC"] = () => BRANCH(Condition.VC), ["BVS"] = () => BRANCH(Condition.VS),
+    };
+    
+    public static Signal[][] OpcodeRom()
+    {
+        Signal[][] table = new Signal[256][];
+        string[] lines = File.ReadAllLines("OpcodeTable.csv");
+
+        for (int i = 1; i <= 16; i++)
+        {
+            string[] cells = lines[i].Split(',').Select(x => x.Trim()).ToArray();   
+            
+            for (int j = 1; j <= 16; j++)
+            {
+                string[] cell = cells[j].Split(' ');
+                var index = ((i - 1) << 4) | (j - 1);
+                table[index] = [..AddressingTable[cell[1]](), ..MnemonicTable[cell[0]]()];
+                if (table[index].Length < 2) continue;
+                table[index][0].Name = $"{cell[0]} {DebugAddressingModes[cell[1]]}";
+            }
+        }
+        return table;
+    }
+    
+    private static readonly Dictionary<string, string> DebugAddressingModes = new()
+    {
+        {"IMP", "imp"}, {"IMM", "#$??"}, {"ZP", "$??"}, {"ZPX", "$??,X"}, {"ZPY", "$??,Y"},
+        {"ABS", "$????"}, {"ABSX", "$????,X"}, {"ABSY", "$????,Y"}, {"IND", "($????)"}, {"INDX", "($??,X)"}, {"INDY", "($??),Y"},
     };
 }

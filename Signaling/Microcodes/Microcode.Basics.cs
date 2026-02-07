@@ -8,13 +8,13 @@ public static partial class Microcode
     private static Signal[] LOAD(Pointer destination) =>
     [
         MEM_READ(WZ),
-        REG_COMMIT(Pointer.TMP, destination),
+        REG_COMMIT(Pointer.MDR, destination),
         ALU_COMPUTE(Operation.NONE, destination, Pointer.NIL, FlagMasks[FlagMask.ZN]),
     ];
     
     private static Signal[] STORE(Pointer source) =>
     [
-        REG_COMMIT(source, Pointer.TMP),
+        REG_COMMIT(source, Pointer.MDR),
         MEM_WRITE(WZ),
     ];
 
@@ -29,14 +29,15 @@ public static partial class Microcode
     private static Signal[] ALU(Operation operation, Pointer source, FlagMask mask, bool write) =>
     [
         MEM_READ(WZ),
-        ALU_COMPUTE(operation, source, Pointer.TMP, FlagMasks[mask]),
+        ALU_COMPUTE(operation, source, Pointer.MDR, FlagMasks[mask]),
         ..write ? [REG_COMMIT(Pointer.TMP, source)] : NONE,
     ];
     
     private static Signal[] ALU_MEM(Operation operation, FlagMask mask) =>
     [
         MEM_READ(WZ),
-        ALU_COMPUTE(operation, Pointer.TMP, Pointer.NIL, FlagMasks[mask]),
+        ALU_COMPUTE(operation, Pointer.MDR, Pointer.NIL, FlagMasks[mask]),
+        REG_COMMIT(Pointer.TMP, Pointer.MDR),
         MEM_WRITE(WZ),
     ];
     
@@ -49,8 +50,8 @@ public static partial class Microcode
     private static Signal[] BRANCH(Condition condition) =>
     [
         CHECK_COND(condition),
-        ..ADD_INDEX(Pointer.PCL, Pointer.WR),
-        ..ADD_CARRY(Pointer.PCH, Pointer.ZR),
+        ..ADD_INDEX(Pointer.PCL, Pointer.WL),
+        ..ADD_CARRY(Pointer.PCH, Pointer.ZL),
     ];
     
     private static Signal[] FLAG(bool clr, Flag flag) =>

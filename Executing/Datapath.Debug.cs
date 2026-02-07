@@ -16,7 +16,7 @@ public partial class Datapath
 
         Console.WriteLine($"PC: {Hex(Merge(DebugGet(Pointer.PCL), DebugGet(Pointer.PCH)))}");
         Console.WriteLine($"SP: {Hex(DebugGet(Pointer.SP))}");
-        Console.WriteLine($"WZ: {Hex(Merge(DebugGet(Pointer.WR), DebugGet(Pointer.ZR)))}");
+        Console.WriteLine($"WZ: {Hex(Merge(DebugGet(Pointer.WL), DebugGet(Pointer.ZL)))}");
         
         Console.WriteLine($"A: {Hex(DebugGet(Pointer.ACC))}");
         Console.WriteLine($"X: {Hex(DebugGet(Pointer.IX))}");

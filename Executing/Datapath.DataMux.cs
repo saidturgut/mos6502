@@ -14,14 +14,14 @@ public partial class Datapath
 
     private void MemoryRead()
     {        
-        Point(Pointer.TMP).Set(Ram.Read(Merge(Point(signal.First).Get(), Point(signal.Second).Get())));
+        Point(Pointer.MDR).Set(Ram.Read(Merge(Point(signal.First).Get(), Point(signal.Second).Get())));
         //Console.WriteLine($"RAM READ: {Hex(Merge(Point(signal.First).Get(), Point(signal.Second).Get()))} {Hex(Point(Pointer.TMP).Get())}");
     }
 
     private void MemoryWrite()
     {
         Ram.Write(Merge(
-            Point(signal.First).Get(), Point(signal.Second).Get()), Point(Pointer.TMP).Get());
+            Point(signal.First).Get(), Point(signal.Second).Get()), Point(Pointer.MDR).Get());
         if(debugMode) DebugMemoryWrite();
     }
     
@@ -45,10 +45,10 @@ public partial class Datapath
     public void Clear()
     {
         debugName = "";
-        Point(Pointer.NIL).Set(0);
+        Point(Pointer.MDR).Set(0);
         Point(Pointer.TMP).Set(0);
-        Point(Pointer.WR).Set(0);
-        Point(Pointer.ZR).Set(0);
+        Point(Pointer.WL).Set(0);
+        Point(Pointer.ZL).Set(0);
         flagLatch = 0;
         stall = false;
     }

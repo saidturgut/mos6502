@@ -12,9 +12,7 @@ public class Control
     public bool halt;
 
     public void Init()
-    {
-        decoded = Decoder.Fetch;
-    }
+        => decoded = Decoder.Fetch;
 
     public Signal Emit()
         => decoded[timeState];
@@ -32,18 +30,7 @@ public class Control
         switch (decoded[timeState].Cycle)
         {
             case Cycle.HALT: halt = true; break;
-            case Cycle.DECODE:
-            {
-                decoded = Decoder.Decode(signal.Opcode);
-                
-                //Console.WriteLine($"TOTAL CYCLES : {decoded.Length}");
-                
-                if (decoded == Array.Empty<Signal>())
-                {
-                    throw new Exception($"ILLEGAL OPCODE \"{signal.Opcode}\"");
-                }
-                break;
-            }
+            case Cycle.DECODE: decoded = Decoder.Decode(signal.Opcode); break;
             default: decoded = Decoder.Fetch; commit = true; break;
         }
         timeState = 0;

@@ -4,12 +4,7 @@ public partial class Alu
 {
     private static AluOutput NONE(AluInput input) => new()
         { Result = input.A, };
-
-    private static AluOutput ADD(AluInput input) => new()
-        { Result = (byte)(input.A + input.B) };
-    private static AluOutput SUB(AluInput input) => new()
-        { Result = (byte)(input.A + ~input.B + 1) };
-
+    
     private static AluOutput ADC(AluInput input)
     {
         if (input.DecimalMode) return DAD(input);
@@ -41,11 +36,11 @@ public partial class Alu
         { Result = (byte)(input.A ^ input.B) };
     private static AluOutput OR(AluInput input) => new()
         { Result = (byte)(input.A | input.B) };
-
-    private static AluOutput INC(AluInput input)
-    { input.B = 1; return ADD(input); }
-    private static AluOutput DEC(AluInput input)
-    { input.B = 1; return SUB(input); }
+    
+    private static AluOutput INC(AluInput input) => new()
+        { Result = (byte)(input.A + input.B), };
+    private static AluOutput DEC(AluInput input) => new()
+        { Result = (byte)(input.A + ~input.B + 1), };
     
     private static bool Carry(int source, byte bit)
         => (byte)((source >> bit) & 1) != 0;

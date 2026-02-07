@@ -4,22 +4,24 @@ using Microcodes;
 
 public class Decoder
 {
-    private readonly Signal[][] Table = Microcode.OpcodeRom(false);
+    private readonly Signal[][] Table = Microcode.OpcodeRom();
 
     public readonly Signal[] Fetch = Microcode.FETCH;
 
     public Signal[] Decode(byte opcode)
     {
-        Console.WriteLine("********");
+        var decoded = Table[opcode];
+        
+        if (decoded == Array.Empty<Signal>()) 
+            throw new Exception($"ILLEGAL OPCODE \"{opcode}\"");
 
-        foreach (var VARIABLE in Table[opcode])
-        {
-            Console.WriteLine(VARIABLE.Cycle);
-        }
+        return decoded;
         
         Console.WriteLine("********");
-
-        return Table[opcode];
+        foreach (var VARIABLE in Table[opcode]) Console.WriteLine(VARIABLE.Cycle);
+        Console.WriteLine("********");
+        
+        return decoded;
     }
 }
 
@@ -46,6 +48,6 @@ public enum Pointer
     PCL, PCH, // PROGRAM COUNTER
     SP, NIL, // STACK POINTER
     ACC, IX, IY, // 8 BIT DATA REGISTERS
-    WR, ZR, TMP, // TEMPORARY REGISTERS
+    WL, ZL, TMP, MDR, // TEMPORARY LATCHES
     IR, SR, // OPCODE AND STATUS REGISTERS
 } 

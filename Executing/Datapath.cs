@@ -3,7 +3,7 @@ using Signaling;
 
 public partial class Datapath
 {
-    private readonly Register[] Registers = new Register[12];
+    private readonly Register[] Registers = new Register[13];
 
     private Signal signal = new();
 
@@ -18,11 +18,11 @@ public partial class Datapath
 
         Rom.Boot(Ram);
         
-        Point(Pointer.SP).Set(0xFD);
-        Point(Pointer.SR).Set(0x20);
-        Point(Pointer.PCH).Set(0x80);
-        Point(Pointer.IX).Set(0x4);
-        Point(Pointer.IY).Set(0x8);
+        //Point(Pointer.SP).Set(0xFD);
+        //Point(Pointer.SR).Set(0x20);
+        //Point(Pointer.PCH).Set(0x80);
+        //Point(Pointer.IX).Set(0x7);
+        //Point(Pointer.IY).Set(0x7);
     }
     
     public void Receive(Signal input)
@@ -30,7 +30,6 @@ public partial class Datapath
 
     public void Execute()
     {
-        if (signal.Name != "") debugName = signal.Name;
         switch (signal.Cycle)
         {
             case Cycle.REG_COMMIT: RegisterWrite(); break;
@@ -41,7 +40,14 @@ public partial class Datapath
             case Cycle.PAIR_DEC: Decrement(); break;
             default: stall = !Sru.Check(signal.Condition); break;
         }
+        Protocol();
+    }
+
+    private void Protocol()
+    {
+        if (signal.Name != "") debugName = signal.Name;
         Sru.Update(Point(Pointer.SR).Get());
+        Point(Pointer.NIL).Set(0);
     }
 
     private Register Point(Pointer pointer)
