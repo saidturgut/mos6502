@@ -8,12 +8,12 @@ public static partial class Microcode
         ["-"] = () => [],
         ["IMP"] = () => IMPLIED,
         ["IMM"] = () => IMMEDIATE,
-        ["ZP"] = () => ZERO_PAGE(Pointer.NIL),
-        ["ZPX"] = () => ZERO_PAGE(Pointer.IX),
-        ["ZPY"] = () => ZERO_PAGE(Pointer.IY),
-        ["ABS"] = () => ABSOLUTE(Pointer.NIL),
-        ["ABSX"] = () => ABSOLUTE(Pointer.IX),
-        ["ABSY"] = () => ABSOLUTE(Pointer.IY),
+        ["ZP"] = () => ZERO_PAGE,
+        ["ZPX"] = () => ZERO_PAGE_IDX(Pointer.IX),
+        ["ZPY"] = () => ZERO_PAGE_IDX(Pointer.IY),
+        ["ABS"] = () => ABSOLUTE,
+        ["ABSX"] = () => ABSOLUTE_IDX(Pointer.IX),
+        ["ABSY"] = () => ABSOLUTE_IDX(Pointer.IY),
         ["IND"] = () => INDIRECT,
         ["INDX"] = () => INDIRECT_X,
         ["INDY"] = () => INDIRECT_Y,
@@ -21,7 +21,7 @@ public static partial class Microcode
     
     private static readonly Dictionary<string, Func<Signal[]>> MnemonicTable = new()
     {
-        ["-"] = () => [],
+        ["-"] = () => [CHANGE_STATE(Cycle.IDLE)],
         ["NOP"] = () => [CHANGE_STATE(Cycle.IDLE)],
         ["HLT"] = () => [CHANGE_STATE(Cycle.HALT)],
 
@@ -32,9 +32,9 @@ public static partial class Microcode
         // TRANSFER
         ["TAX"] = () => TRANSFER(Pointer.ACC, Pointer.IX, true), ["TAY"] = () => TRANSFER(Pointer.ACC, Pointer.IY, true),
         ["TXA"] = () => TRANSFER(Pointer.IX, Pointer.ACC, true), ["TYA"] = () => TRANSFER(Pointer.IY, Pointer.ACC, true),
-        ["TXS"] = () => TRANSFER(Pointer.IX, Pointer.SP, true), ["TSX"] = () => TRANSFER(Pointer.SP, Pointer.IX, false),
+        ["TXS"] = () => TRANSFER(Pointer.IX, Pointer.SPL, true), ["TSX"] = () => TRANSFER(Pointer.SPL, Pointer.IX, false),
 
-        // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        //-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-//
 
         // INC & DEC
         ["INC"] = () => ALU_MEM(Operation.INC, FlagMask.ZN), ["DEC"] = () => ALU_MEM(Operation.DEC, FlagMask.ZN),
@@ -43,9 +43,9 @@ public static partial class Microcode
         
         // ARITHMETIC & LOGIC
         ["ADC"] = () => ALU(Operation.ADC, Pointer.ACC, FlagMask.CZVN, true), ["SBC"] = () => ALU(Operation.SBC, Pointer.ACC, FlagMask.CZVN, true),
-        ["AND"] = () => ALU(Operation.AND, Pointer.ACC, FlagMask.ZN, true), ["CMP"] = () => ALU(Operation.SBC, Pointer.ACC, FlagMask.CZN, false),
-        ["ORA"] = () => ALU(Operation.OR, Pointer.ACC, FlagMask.ZN, true), ["CPX"] = () => ALU(Operation.SBC, Pointer.IX, FlagMask.CZN, false),
-        ["EOR"] = () => ALU(Operation.EOR, Pointer.ACC, FlagMask.ZN, true), ["CPY"] = () => ALU(Operation.SBC, Pointer.IY, FlagMask.CZN, false),
+        ["AND"] = () => ALU(Operation.AND, Pointer.ACC, FlagMask.ZN, true), ["CMP"] = () => ALU(Operation.CMP, Pointer.ACC, FlagMask.CZN, false),
+        ["ORA"] = () => ALU(Operation.OR, Pointer.ACC, FlagMask.ZN, true), ["CPX"] = () => ALU(Operation.CMP, Pointer.IX, FlagMask.CZN, false),
+        ["EOR"] = () => ALU(Operation.EOR, Pointer.ACC, FlagMask.ZN, true), ["CPY"] = () => ALU(Operation.CMP, Pointer.IY, FlagMask.CZN, false),
         
         // SHIFT & ROTATE
         ["BIT"] = () => ALU(Operation.BIT, Pointer.ACC, FlagMask.ZVN, false),
@@ -59,7 +59,7 @@ public static partial class Microcode
         ["CLC"] = () => FLAG(true, Flag.CARRY), ["CLD"] = () => FLAG(true, Flag.DECIMAL), ["CLI"] = () => FLAG(true, Flag.INTERRUPT), 
         ["CLV"] = () => FLAG(true, Flag.OVERFLOW),
         
-        // ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+        //-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-/-//
 
         // CONTROL FLOW
         ["JMP"] = () => JUMP, ["JSR"] = () => CALL,
@@ -77,30 +77,42 @@ public static partial class Microcode
         ["BVC"] = () => BRANCH(Condition.VC), ["BVS"] = () => BRANCH(Condition.VS),
     };
     
-    public static Signal[][] OpcodeRom()
+    public static Signal[][] OpcodeRom(bool dump)
     {
         Signal[][] table = new Signal[256][];
-        string[] lines = File.ReadAllLines("OpcodeTable.csv");
+        string[] lines = File.ReadAllLines("Opcodes.csv");
 
-        for (int i = 1; i <= 16; i++)
+        for (int i = 0; i < 16; i++)
         {
             string[] cells = lines[i].Split(',').Select(x => x.Trim()).ToArray();   
             
-            for (int j = 1; j <= 16; j++)
+            for (int j = 0; j < 16; j++)
             {
                 string[] cell = cells[j].Split(' ');
-                var index = ((i - 1) << 4) | (j - 1);
+                var index = (i << 4) | j;
                 table[index] = [..AddressingTable[cell[1]](), ..MnemonicTable[cell[0]]()];
-                if (table[index].Length < 2) continue;
                 table[index][0].Name = $"{cell[0]} {DebugAddressingModes[cell[1]]}";
             }
         }
+        
+        if (dump)
+        {
+            for (int i = 0; i < 256; i++)
+            {
+                Console.WriteLine($"OPCODE {i:X2}");
+                foreach (Signal signal in table[i]) Console.WriteLine(signal.Cycle);
+                Console.WriteLine("-----------------------------");
+            }
+        
+            Environment.Exit(20);
+        }
+        
         return table;
     }
     
     private static readonly Dictionary<string, string> DebugAddressingModes = new()
     {
-        {"IMP", "imp"}, {"IMM", "#$??"}, {"ZP", "$??"}, {"ZPX", "$??,X"}, {"ZPY", "$??,Y"},
+        {"-", "ILLEGAL"}, {"IMP", "imp"}, {"IMM", "#$??"}, {"ZP", "$??"}, {"ZPX", "$??,X"}, {"ZPY", "$??,Y"},
         {"ABS", "$????"}, {"ABSX", "$????,X"}, {"ABSY", "$????,Y"}, {"IND", "($????)"}, {"INDX", "($??,X)"}, {"INDY", "($??),Y"},
     };
 }

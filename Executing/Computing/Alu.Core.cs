@@ -24,12 +24,20 @@ public partial class Alu
         var result = input.A + ~input.B + input.C;
         AluOutput output = new() { Result = (byte)result };
         
-        if (Carry(result, 8)) output.Flags |= (byte)Flag.CARRY;
+        if (!Carry(result, 8)) output.Flags |= (byte)Flag.CARRY;
         if (SignedOverflow(input.A, (byte)~input.B, output.Result)) output.Flags |= (byte)Flag.OVERFLOW;
         
         return output;
     }
-
+    
+    private static AluOutput CMP(AluInput input)
+    {
+        var result = input.A + ~input.B + 1;
+        AluOutput output = new() { Result = (byte)result };
+        if (!Carry(result, 8)) output.Flags |= (byte)Flag.CARRY;
+        return output;
+    }
+    
     private static AluOutput AND(AluInput input) => new()
         { Result = (byte)(input.A & input.B) };
     private static AluOutput EOR(AluInput input) => new()
@@ -38,9 +46,9 @@ public partial class Alu
         { Result = (byte)(input.A | input.B) };
     
     private static AluOutput INC(AluInput input) => new()
-        { Result = (byte)(input.A + input.B), };
+        { Result = (byte)(input.A + 1), };
     private static AluOutput DEC(AluInput input) => new()
-        { Result = (byte)(input.A + ~input.B + 1), };
+        { Result = (byte)(input.A - 1), };
     
     private static bool Carry(int source, byte bit)
         => (byte)((source >> bit) & 1) != 0;

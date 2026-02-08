@@ -4,15 +4,18 @@ using Executing;
 
 public class Cpu
 {
+    private readonly Bus Bus = new();
+    
     private readonly Datapath Datapath = new();
     private readonly Control Control = new();
-
+    
     private const bool debugMode = true;
     
     public void Power() => Clock();
 
     private void Clock()
     {
+        Bus.Init();
         Datapath.Init(debugMode);
         Control.Init();
 
@@ -29,7 +32,7 @@ public class Cpu
     {
         Datapath.Receive(Control.Emit());
         
-        Datapath.Execute();
+        Datapath.Execute(Bus);
 
         Control.Advance(Datapath.Emit());
 

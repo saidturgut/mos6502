@@ -36,6 +36,7 @@ public static partial class Microcode
     private static Signal[] ALU_MEM(Operation operation, FlagMask mask) =>
     [
         MEM_READ(WZ),
+        MEM_WRITE(WZ),
         ALU_COMPUTE(operation, Pointer.MDR, Pointer.NIL, FlagMasks[mask]),
         REG_COMMIT(Pointer.TMP, Pointer.MDR),
         MEM_WRITE(WZ),
@@ -46,16 +47,18 @@ public static partial class Microcode
         ALU_COMPUTE(operation, source, Pointer.NIL, FlagMasks[mask]),
         REG_COMMIT(Pointer.TMP, source),
     ];
-
-    private static Signal[] BRANCH(Condition condition) =>
-    [
-        CHECK_COND(condition),
-        ..ADD_INDEX(Pointer.PCL, Pointer.WL),
-        ..ADD_CARRY(Pointer.PCH, Pointer.ZL),
-    ];
     
     private static Signal[] FLAG(bool clr, Flag flag) =>
     [
         ALU_COMPUTE(clr ? Operation.CLR : Operation.SET, Pointer.NIL, Pointer.NIL, flag),
+    ];
+    
+    private static Signal[] BRANCH(Condition condition) =>
+    [
+        CHECK_COND(condition),
+        MEM_READ(WZ),
+        ..COMMIT_INDEX(Operation.IDX, Pointer.PCL, Pointer.PCL, Pointer.MDR),
+        ALU_COMPUTE(Operation.SXT, Pointer.PCH, Pointer.MDR, Flag.NONE),
+        REG_COMMIT(Pointer.TMP, Pointer.PCH),
     ];
 }

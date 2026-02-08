@@ -4,7 +4,7 @@ using Microcodes;
 
 public class Decoder
 {
-    private readonly Signal[][] Table = Microcode.OpcodeRom();
+    private readonly Signal[][] Table = Microcode.OpcodeRom(false);
 
     public readonly Signal[] Fetch = Microcode.FETCH;
 
@@ -45,8 +45,9 @@ public enum Cycle
 
 public enum Pointer
 {
+    NIL, // ZERO LATCH
     PCL, PCH, // PROGRAM COUNTER
-    SP, NIL, // STACK POINTER
+    SPL, SPH,  // STACK POINTER, HIGH FIXED TO 0x01
     ACC, IX, IY, // 8 BIT DATA REGISTERS
     WL, ZL, TMP, MDR, // TEMPORARY LATCHES
     IR, SR, // OPCODE AND STATUS REGISTERS

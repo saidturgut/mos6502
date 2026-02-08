@@ -3,39 +3,29 @@ using Signaling;
 
 public partial class Datapath
 {
-    private readonly Rom Rom = new();
-    private readonly Ram Ram = new();
-
     private void RegisterWrite()
-    {
-        Point(signal.Second).Set(Point(signal.First).Get());
-        //Console.WriteLine($"REG WRITE: {signal.Second} {Point(signal.Second).Get()}");
-    }
+        => Point(signal.Second).Set(Point(signal.First).Get());
 
-    private void MemoryRead()
-    {        
-        Point(Pointer.MDR).Set(Ram.Read(Merge(Point(signal.First).Get(), Point(signal.Second).Get())));
-        //Console.WriteLine($"RAM READ: {Hex(Merge(Point(signal.First).Get(), Point(signal.Second).Get()))} {Hex(Point(Pointer.TMP).Get())}");
-    }
+    private void MemoryRead(Bus bus)
+        => Point(Pointer.MDR).Set(bus.Read(Merge(Point(signal.First).Get(), Point(signal.Second).Get())));
 
-    private void MemoryWrite()
+    private void MemoryWrite(Bus bus)
     {
-        Ram.Write(Merge(
-            Point(signal.First).Get(), Point(signal.Second).Get()), Point(Pointer.MDR).Get());
+        bus.Write(Merge(Point(signal.First).Get(), Point(signal.Second).Get()), Point(Pointer.MDR).Get());
         if(debugMode) DebugMemoryWrite();
     }
     
     private void Increment()
     {
         Point(signal.First).Set((byte)(Point(signal.First).Get() + 1));
-        if (Point(signal.First).Get() == 0x00 && signal.Second is not Pointer.NIL)
+        if (Point(signal.First).Get() == 0x00)
             Point(signal.Second).Set((byte)(Point(signal.Second).Get() + 1));
     }
 
     private void Decrement()
     {
         Point(signal.First).Set((byte)(Point(signal.First).Get() - 1));
-        if (Point(signal.First).Get() == 0xFF && signal.Second is not Pointer.NIL)
+        if (Point(signal.First).Get() == 0xFF)
             Point(signal.Second).Set((byte)(Point(signal.Second).Get() - 1));
     }
     
@@ -44,7 +34,7 @@ public partial class Datapath
     
     public void Clear()
     {
-        debugName = "";
+        debugName = "NULL";
         Point(Pointer.MDR).Set(0);
         Point(Pointer.TMP).Set(0);
         Point(Pointer.WL).Set(0);

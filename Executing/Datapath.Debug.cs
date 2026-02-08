@@ -3,7 +3,7 @@ using Signaling;
 
 public partial class Datapath
 {
-    private string debugName;
+    private string debugName = "NULL";
     
     public void Debug()
     {
@@ -15,7 +15,7 @@ public partial class Datapath
         Console.WriteLine($"IR: {Hex(DebugGet(Pointer.IR))}");
 
         Console.WriteLine($"PC: {Hex(Merge(DebugGet(Pointer.PCL), DebugGet(Pointer.PCH)))}");
-        Console.WriteLine($"SP: {Hex(DebugGet(Pointer.SP))}");
+        Console.WriteLine($"SP: {Hex(DebugGet(Pointer.SPL))}");
         Console.WriteLine($"WZ: {Hex(Merge(DebugGet(Pointer.WL), DebugGet(Pointer.ZL)))}");
         
         Console.WriteLine($"A: {Hex(DebugGet(Pointer.ACC))}");
@@ -31,7 +31,7 @@ public partial class Datapath
 
     private void DebugMemoryWrite()
     {
-        Console.WriteLine($"MEM[{Merge(Point(signal.First).Get(), Point(signal.Second).Get())}]: {Point(Pointer.TMP).Get()}");
+        Console.WriteLine($"MEM[{Hex(Merge(Point(signal.First).Get(), Point(signal.Second).Get()))}]: {Hex(Point(Pointer.MDR).Get())}");
     }
     
     private byte DebugGet(Pointer pointer)

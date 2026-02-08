@@ -6,7 +6,7 @@ public static partial class Microcode
     private static readonly Signal[] NONE = Array.Empty<Signal>();
     
     private static readonly Pointer[] PC = [Pointer.PCL, Pointer.PCH];
-    private static readonly Pointer[] SP = [Pointer.SP, Pointer.NIL];
+    private static readonly Pointer[] SP = [Pointer.SPL, Pointer.SPH];
     private static readonly Pointer[] WZ = [Pointer.WL, Pointer.ZL];
     
     public static Signal[] FETCH =>
@@ -35,7 +35,7 @@ public static partial class Microcode
     private static Signal PAIR_INC(Pointer[] pair) => new()
         { Cycle = Cycle.PAIR_INC, First = pair[0], };
     private static Signal PAIR_DEC(Pointer[] pair) => new()
-        { Cycle = Cycle.PAIR_INC, First = pair[0] };
+        { Cycle = Cycle.PAIR_DEC, First = pair[0] };
     
     private static readonly Dictionary<FlagMask, Flag> FlagMasks = new()
     {

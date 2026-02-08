@@ -18,18 +18,20 @@ public partial class Alu
     private static readonly Func<AluInput, AluOutput>[] Operations =
     [
         NONE, 
-        ADC, SBC, AND, OR, EOR, INC, DEC,
+        ADC, SBC, CMP,
+        AND, OR, EOR, INC, DEC,
         ASL, LSR, ROL, ROR, BIT,
-        CLR, SET, PSR, SRP, IDX, CRY,
+        CLR, SET, PSR, SRP, IDX, CRY, SXT,
     ];
 }
 
 public enum Operation
 {
     NONE, 
-    ADC, SBC, AND, OR, EOR, INC, DEC,
+    ADC, SBC, CMP,
+    AND, OR, EOR, INC, DEC,
     ASL, LSR, ROL, ROR, BIT,
-    CLR, SET, PSR, SRP, IDX, CRY,
+    CLR, SET, PSR, SRP, IDX, CRY, SXT,
 }
 
 public struct AluInput

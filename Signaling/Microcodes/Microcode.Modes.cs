@@ -16,35 +16,46 @@ public static partial class Microcode
         PAIR_INC(PC)
     ];
         
-    private static Signal[] ZERO_PAGE(Pointer index) => // ZP, ZPX, ZPY
+    private static Signal[] ZERO_PAGE => // ZP, ZPX, ZPY
     [
         ..READ_IMM,
-        ..ADD_INDEX(Pointer.MDR, index),
-        REG_COMMIT(Pointer.TMP, Pointer.WL),
+        REG_COMMIT(Pointer.MDR, Pointer.WL),
+    ];
+
+    private static Signal[] ZERO_PAGE_IDX(Pointer index) =>
+    [
+        ..READ_IMM,
+        ..COMMIT_INDEX(Operation.IDX, Pointer.MDR, Pointer.WL, index),
     ];
     
     // ------------------------- SLOW MODES ------------------------- //
     
-    private static Signal[] ABSOLUTE(Pointer index) => // ABS, ABSX, ABSY
+    private static Signal[] ABSOLUTE => // ABS
     [
         ..READ_IMM,
-        ..ADD_INDEX(Pointer.MDR, index),
-        REG_COMMIT(Pointer.TMP, Pointer.WL),
+        REG_COMMIT(Pointer.MDR, Pointer.WL),
         ..READ_IMM,
-        ..ADD_CARRY(Pointer.MDR, index),
-        REG_COMMIT(Pointer.TMP, Pointer.ZL),
+        REG_COMMIT(Pointer.MDR, Pointer.ZL),
+    ];
+
+    private static Signal[] ABSOLUTE_IDX(Pointer index) => // ABS ZP
+    [
+        ..READ_IMM,
+        ..COMMIT_INDEX(Operation.IDX, Pointer.MDR, Pointer.WL, index),
+        ..READ_IMM,
+        ..COMMIT_INDEX(Operation.CRY, Pointer.MDR, Pointer.ZL, Pointer.NIL),
     ];
     
     private static Signal[] INDIRECT => // IND
     [
-        ..ABSOLUTE(Pointer.NIL),
+        ..ABSOLUTE,
         ..INDIRECT_ADDRESS(),
     ];
     
     private static Signal[] INDIRECT_X => // INDX
     [
         ..INDIRECT_POINTER,
-        ..ADD_INDEX(Pointer.WL, Pointer.IX),
+        ..COMMIT_INDEX(Operation.IDX, Pointer.WL, Pointer.WL, Pointer.IX),
         ..INDIRECT_ADDRESS(),
     ];
 
@@ -52,11 +63,17 @@ public static partial class Microcode
     [
         ..INDIRECT_POINTER,
         ..INDIRECT_ADDRESS(),
-        ..ADD_INDEX(Pointer.WL, Pointer.IY), 
-        ..ADD_CARRY(Pointer.ZL, Pointer.IY)
+        ..COMMIT_INDEX(Operation.IDX, Pointer.WL, Pointer.WL, Pointer.IY), 
+        ..COMMIT_INDEX(Operation.CRY, Pointer.ZL, Pointer.ZL, Pointer.NIL)
     ];
     
     // ------------------------- MACROS ------------------------- //
+
+    private static Signal[] COMMIT_INDEX(Operation operation, Pointer source, Pointer destination, Pointer index) =>
+    [
+        ALU_COMPUTE(operation, source, index, Flag.NONE),
+        REG_COMMIT(Pointer.TMP, destination),
+    ];
     
     private static Signal[] READ_IMM => // IMM
     [
@@ -78,21 +95,5 @@ public static partial class Microcode
         MEM_READ(WZ),
         REG_COMMIT(Pointer.MDR, Pointer.ZL),
         REG_COMMIT(Pointer.TMP, Pointer.WL),
-    ];
-    
-    private static Signal[] ADD_INDEX(Pointer source, Pointer index) =>
-    [
-        ..index is not Pointer.NIL 
-            ? [ALU_COMPUTE(Operation.IDX, source, index, Flag.NONE), 
-                ..source is not Pointer.TMP ? [REG_COMMIT(Pointer.TMP, source)] : NONE] 
-            : NONE,
-    ];
-
-    private static Signal[] ADD_CARRY(Pointer source, Pointer index) =>
-    [
-        ..index is not Pointer.NIL
-            ? [ALU_COMPUTE(Operation.CRY, source, Pointer.NIL, Flag.NONE), 
-                ..source is not Pointer.TMP ? [REG_COMMIT(Pointer.TMP, source)] : NONE]
-            : NONE,
     ];
 }

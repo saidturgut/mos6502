@@ -17,8 +17,17 @@ public static partial class Microcode
     [
         PAIR_INC(SP),
         MEM_READ(SP),
-        destination is Pointer.SR ? ALU_COMPUTE(Operation.SRP, Pointer.MDR, Pointer.NIL, Flag.NONE) : REG_COMMIT(Pointer.MDR, destination),
-        ..destination is Pointer.SR ? [REG_COMMIT(Pointer.TMP, destination)] : NONE,
+        destination is Pointer.SR 
+            ? ALU_COMPUTE(Operation.SRP, Pointer.MDR, Pointer.NIL, Flag.NONE) 
+            : ALU_COMPUTE(Operation.NONE, Pointer.MDR, Pointer.NIL, FlagMasks[FlagMask.ZN]),
+        REG_COMMIT(Pointer.TMP, destination),
+    ];
+    
+    private static Signal[] POP(Pointer destination) =>
+    [
+        PAIR_INC(SP),
+        MEM_READ(SP),
+        REG_COMMIT(Pointer.MDR, destination),
     ];
     
     // ------------------------- CONTROL FLOW ------------------------- //
@@ -39,20 +48,20 @@ public static partial class Microcode
 
     private static Signal[] RETURN(bool rti) =>
     [
-        ..rti ? PULL(Pointer.SR) : NONE,
-        ..PULL(Pointer.WL),
-        ..PULL(Pointer.ZL),
+        ..rti ? POP(Pointer.SR) : NONE,
+        ..POP(Pointer.WL),
+        ..POP(Pointer.ZL),
         ..rti ? NONE : [PAIR_INC(WZ)],
-        ..JUMP
+        ..JUMP,
     ];
 
     private static Signal[] BREAK =>
     [
         PAIR_INC(PC),
-        ..PUSH(Pointer.SR),
         ..PUSH(Pointer.PCH),
         ..PUSH(Pointer.PCL),
-        
+        ..PUSH(Pointer.SR),
+
         ALU_COMPUTE(Operation.SET, Pointer.NIL, Pointer.NIL, Flag.INTERRUPT),
         REG_COMMIT(Pointer.TMP, Pointer.WL), // LOAD 0XFF ON WZ
         REG_COMMIT(Pointer.TMP, Pointer.ZL),

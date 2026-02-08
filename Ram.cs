@@ -3,7 +3,19 @@ using Testing;
 
 public class Ram
 {
-    private readonly byte[] Memory = new byte[0x10000];
+    private readonly byte[] Memory = new byte[0x7FFF];
+    
+    public Device Device = new()
+    {
+        Min = 0x0000,
+        Max = 0x7FFF,
+    };
+
+    public void Init()
+    {
+        Device.Read = Read;
+        Device.Write = Write;
+    }
     
     public void MemoryDump() => HexDump.Run(Memory);
 

@@ -18,7 +18,7 @@ public partial class Alu
 
         return output;
     }
-    
+
     private static AluOutput DSB(AluInput input)
     {
         var result = input.A - input.B - (1 - input.C);
@@ -36,7 +36,7 @@ public partial class Alu
 
         return output;
     }
-    
+
     private static AluOutput IDX(AluInput input)
     {
         var result = input.A + input.B;
@@ -44,9 +44,11 @@ public partial class Alu
         if (Carry(result, 8)) output.Flags |= (byte)Flag.CARRY;
         return output;
     }
-    
+
     private static AluOutput CRY(AluInput input) => new()
         { Result = (byte)(input.A + (input.F & (byte)Flag.CARRY)) };
+    private static AluOutput SXT(AluInput input) => new()
+        { Result = (byte)(input.A + (byte)((input.B & 0x80) != 0 ? 0xFF : 0x00) + (input.F & (byte)Flag.CARRY)) };
     
     private static AluOutput PSR(AluInput input) => new()
         { Result = (byte)(input.A | (byte)Flag.BREAK | (byte)Flag.UNUSED) };
@@ -54,7 +56,7 @@ public partial class Alu
         { Result = (byte)(input.A & ~((byte)Flag.BREAK | (byte)Flag.UNUSED)) };
 
     private static AluOutput CLR(AluInput input) => new()
-        { Flags = 0x00 };
+        { Result = 0x00, Flags = 0x00 };
     private static AluOutput SET(AluInput input) => new()
-        { Flags = 0xFF };
+        { Result = 0xFF, Flags = 0xFF };
 }
